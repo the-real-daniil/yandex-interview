@@ -225,7 +225,6 @@ function test() {
 ```js
 function throttle(fn, delay, ctx) {
   let lastCallArgs = null;
-
   let blocked = false;
 
   function setTimer() {
@@ -236,11 +235,8 @@ function throttle(fn, delay, ctx) {
 
       if (lastCallArgs) {
         fn.apply(ctx, lastCallArgs);
-
         lastCallArgs = null;
-
         blocked = true;
-
         setTimer();
       }
     }, delay);
@@ -251,7 +247,6 @@ function throttle(fn, delay, ctx) {
       lastCallArgs = args;
     } else {
       fn.apply(ctx, args);
-
       setTimer();
     }
   };
