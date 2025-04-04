@@ -405,8 +405,8 @@ const asyncF = (x) =>
 const limitedFunc = timeLimited(asyncF, 500);
 
 limitedFunc(5)
-  .then(console.log) // Не успеет, будет "Time limit exceeded"
-  .catch(console.error);
+  .then(console.log) 
+  .catch(console.error); // Не успеет, будет "Time limit exceeded"
 
 const limitedFunc2 = timeLimited(asyncF, 1500);
 
