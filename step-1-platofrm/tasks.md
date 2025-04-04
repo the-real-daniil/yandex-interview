@@ -382,10 +382,11 @@ const asyncF = () => {};
 
 ```js
 const timeLimited = function (fn, t) {
+  let timerId = null
   return function (...args) {
     return new Promise((resolve, reject) => {
       const timerPromise = new Promise((reject) =>
-        setTimeout(() => reject("Time limit exceeded"), t)
+        timerId = setTimeout(() => reject("Time limit exceeded"), t)
       );
 
       const resultPromise = fn(...args);
@@ -393,7 +394,7 @@ const timeLimited = function (fn, t) {
       Promise.race([timerPromise, resultPromise])
         .then(resolve)
         .catch(reject)
-        .finally(() => clearTimer(timerPromise));
+        .finally(() => clearTimeout(timerId));
     });
   };
 };
