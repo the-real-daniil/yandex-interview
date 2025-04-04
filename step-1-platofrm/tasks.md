@@ -312,7 +312,7 @@ array2.groupBy(String); // { "1": [1], "2": [2], "3": [3] }
 
 // Пример 3
 const array3 = [3.3, 0.5, 1.4];
-array3.groupBy(Math.round); // { "3": [3.3], "1": [0.5], "1": [1.4] }
+array3.groupBy(Math.round); // { "3": [3.3], "1": [0.5, 1.4] }
 ```
 
 ### Решение
