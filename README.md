@@ -18,4 +18,4 @@
 ### Обо мне
 - Мой телеграм-канал: https://t.me/future_cto_notes
 - Мой ютуб-канал: https://www.youtube.com/@the.real.daniil.23
-- Мои услуги: https://teletype.in/@the_real_daniil/mentor
+- Если хочешь ускорить достижение результата: https://teletype.in/@the_real_daniil/mentor
