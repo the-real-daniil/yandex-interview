@@ -547,3 +547,108 @@ console.log(nextSequence()); // undefined
    - Формируем строку в соответствии с текущим значением `position`
    - Обновляем индексы справа налево
    - Возврщаем результат
+
+## Фетч умный, а ты — нет
+
+### Задача
+
+```js
+// Есть функция batchFetch для запроса данных из бэкенда по id, работающая следующим образом:
+//
+// batchFetch([1, 2]) -> Promise { 1: { id: 1, title: 'one', ... }, 2: { id: 2, title: 'two', ... } }
+//
+// Для уменьшения количества запросов к бэкенду
+// нужно написать обертку, создающую функцию "smartFetch(id)",
+// склеивающую вызовы в один (c окном timeout мс).
+//
+// Важно отметить, это не debounce, а склеивание запросов к бэкенду, т.е. все вызовы функции должны вернуть значение.
+
+// Считаем, что:
+// - окно ожидания вызовов начинается заново сразу после начала запроса к бэкенду.
+// - в пределах таймаута все id уникальные
+// - batchFetch всегда успешен
+
+function createSmartFetch(timeout) {}
+
+(async function () {
+  console.clear();
+
+  const smartFetch = createSmartFetch(3000);
+
+  const a = smartFetch(10);
+  const b = smartFetch(20);
+
+  console.log("ждём 100 мс, накапливаем запросы");
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  console.log("a:", await a); // a: { id: 10, title: 10 }
+  console.log("b:", await b); // b: { id: 20, title: 20 }
+})();
+
+function batchFetch(ids) {
+  return new Promise((resolve) => {
+    console.log("запрос к бэкенду", ids);
+    setTimeout(() => {
+      const res = {};
+      ids.forEach((id) => (res[id] = { id, title: id }));
+      resolve(res);
+    }, Math.random() * 1000);
+  });
+}
+```
+
+### Решение
+
+```js
+function createSmartFetch(timeout) {
+  let queue = new Map(); // id -> { resolve, reject }
+  let timer = null;
+
+  return function smartFetch(id) {
+    return new Promise((resolve) => {
+      queue.set(id, resolve);
+
+      if (!timer) {
+        timer = setTimeout(async () => {
+          const ids = Array.from(queue.keys());
+          const resolvers = new Map(queue);
+          queue.clear();
+          timer = null;
+
+          const results = await batchFetch(ids);
+
+          for (const id of ids) {
+            resolvers.get(id)(results[id]);
+          }
+        }, timeout);
+      }
+    });
+  };
+}
+
+(async function () {
+  console.clear();
+
+  const smartFetch = createSmartFetch(3000);
+
+  const a = smartFetch(10);
+  const b = smartFetch(20);
+
+  console.log("ждём 100 мс, накапливаем запросы");
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  console.log("a:", await a); // a: { id: 10, title: 10 }
+  console.log("b:", await b); // b: { id: 20, title: 20 }
+})();
+
+function batchFetch(ids) {
+  return new Promise((resolve) => {
+    console.log("запрос к бэкенду", ids);
+    setTimeout(() => {
+      const res = {};
+      ids.forEach((id) => (res[id] = { id, title: id }));
+      resolve(res);
+    }, Math.random() * 1000);
+  });
+}
+```
