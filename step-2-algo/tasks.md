@@ -652,3 +652,62 @@ function batchFetch(ids) {
   });
 }
 ```
+
+## Параллельный мир
+
+### Задача
+
+```js
+/*
+Дан массив ссылок: ['url1', 'url2', ...] и лимит одновременных запросов (limit)
+Необходимо реализовать функцию, которая опросит урлы и вызовет callback c массивом ответов
+['url1_answer', 'url2_answer', ...] так, чтобы в любой момент времени выполнялось не более limit
+запросов (как только любой из них завершился, сразу же отправляется следующий)
+Т.е. нужно реализовать шину с шириной равной limit.
+Требования:
+- Порядок в массиве ответов должен совпадать с порядком в массиве ссылок
+
+Дополнительно:
+- Для опроса можно использовать fetch или $.get
+- Ошибки обрабатывать не нужно
+*/
+
+function parallelLimit(links, limit, callback) {}
+```
+
+### Решение
+```js
+function parallelLimit(links, limit, callback) {
+  const results = [];
+  let index = 0;
+  let active = 0;
+  let completed = 0;
+
+  function runNext() {
+    // если все запросы завершены — вызываем callback
+    if (completed === links.length) {
+      callback(results);
+      return;
+    }
+
+    // запускаем новые задачи, пока не достигли лимита
+    while (active < limit && index < links.length) {
+      const current = index++;
+      active++;
+
+      fetch(links[current])
+        .then(res => {
+          results[current] = res;
+        })
+        .finally(() => {
+          active--;
+          completed++;
+          runNext(); // запускаем следующую задачу
+        });
+    }
+  }
+
+  runNext();
+}
+
+```
