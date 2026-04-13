@@ -406,7 +406,7 @@ const asyncF = (x) =>
 const limitedFunc = timeLimited(asyncF, 500);
 
 limitedFunc(5)
-  .then(console.log) 
+  .then(console.log)
   .catch(console.error); // Не успеет, будет "Time limit exceeded"
 
 const limitedFunc2 = timeLimited(asyncF, 1500);
@@ -751,3 +751,111 @@ console.log(isPangram("Waltz, bad nymph, for quick jigs vex.")); // true
 - Проверяем, встречается ли каждая буква из `LETTERS` в тексте.
 - Если хотя бы одной буквы нет — возвращаем `false`.
 - Если все есть — возвращаем `true`.
+
+
+## Не расслышал, а ну повтори 3 раза
+
+### Задача
+```js
+// Реализовать метод times для числового объекта
+// Функция должна принимать callbackи вызывать его
+// задданое количество разс индексом текущей итерации
+
+console.clear();
+
+(3).times(console.log);
+// 0
+// 1
+// 2
+```
+
+
+### Решение
+```js
+console.clear();
+
+Number.prototype.times = function (cb) {
+  const number = this.valueOf();
+  let count = 0;
+
+  while(count < number) {
+    cb(count);
+    count++;
+  }
+};
+
+(3).times(console.log);
+```
+
+### Объяснение
+
+- Заводим прототип функции 'times'
+- Обрабатываем наш this, потому-что this это '{value: 3}' // Конструктор Number;
+- После заводим цикл с условием пока count меньше числа, то циклируем и вызываем 'cb' с числом
+
+
+## Фильтруй базар(ложь)
+
+### Задача
+```js
+// Необходимо написать функцию, которая на вход принимает объект
+// и убирает из него все falsy значения
+// falsy значения - это такое значение value, для которого Boolean(value) === false;
+// считаем что obj - результат выполнения JSON.parse, то есть plain object;
+
+function filterFalsy(obj) {
+
+}
+
+console.log(filterFalsy([null, 0, false, 1])); // => [1]
+console.log(filterFalsy({'a': null, 'b': [false, 1]})); // => {b: [1]}
+console.log(filterFalsy([null, 0, 5, [0], [false, 16, {'a': null}]])) // => [5, [], [16, {}]]
+```
+
+
+### Решение
+```js
+function filterFalsy(obj) {
+  const isArray = (data) => Array.isArray(data);
+  const isObj = (data) =>
+    typeof data === 'object' && data !== null && !Array.isArray(data);
+  const isPrimitive = (data) => typeof data !== 'object' || data === null;
+
+  if (isArray(obj)) {
+    return obj
+      .map((el) => {
+        if (isPrimitive(el)) {
+          return Boolean(el) ? el : undefined;
+        }
+
+        return filterFalsy(el);
+      })
+      .filter((el) => el !== undefined);
+  }
+
+  if (isObj(obj)) {
+    const formatted = Object.entries(obj).reduce((acc, [key, value]) => {
+      if (isPrimitive(value)) {
+        if (Boolean(value)) {
+          acc.push([key, value]);
+        }
+        return acc;
+      }
+
+      acc.push([key, filterFalsy(value)]);
+      return acc;
+    }, []);
+
+    return Object.fromEntries(formatted);
+  }
+
+  return Boolean(obj) ? obj : undefined;
+}
+```
+
+### Объяснение
+
+- Заводим функции проверки что это за тип данных
+- Обрабатываем каждый тип по стурктуре и внутри детей также проверяем на тип, если он отличается от простого, отдаем в рекурсию
+- В объекте создаем похожую структуру, приведя объект к массиву и после редьюсом пробегаемся также по всем не примитивным типам, а если примитивные то сразу их записываем после фильтрациии
+- Возвращаем из примитива undefined если он false (опционально)
